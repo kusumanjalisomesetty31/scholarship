@@ -1,0 +1,597 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applied Scholarships - Scholarship Finder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #28a745;
+            --secondary: #ff6600;
+            --gradient: linear-gradient(135deg, #ff6600, #ffa500, #28a745);
+            --pending: #ffc107;
+            --approved: #28a745;
+            --rejected: #dc3545;
+            --under-review: #17a2b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+        }
+
+        .navbar {
+            background: var(--gradient);
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            margin: 0 10px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .page-header {
+            background: var(--gradient);
+            color: white;
+            padding: 3rem 0 4rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .stats-container {
+            margin-top: -50px;
+            position: relative;
+            z-index: 10;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-top: 4px solid;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.total { border-top-color: var(--secondary); }
+        .stat-card.pending { border-top-color: var(--pending); }
+        .stat-card.approved { border-top-color: var(--approved); }
+        .stat-card.rejected { border-top-color: var(--rejected); }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .application-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary);
+        }
+
+        .application-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .scholarship-name {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .application-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--pending);
+            border: 1px solid var(--pending);
+        }
+
+        .status-approved {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--approved);
+            border: 1px solid var(--approved);
+        }
+
+        .status-rejected {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--rejected);
+            border: 1px solid var(--rejected);
+        }
+
+        .status-under-review {
+            background: rgba(23, 162, 184, 0.1);
+            color: var(--under-review);
+            border: 1px solid var(--under-review);
+        }
+
+        .progress-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+
+        .step-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step.completed .step-icon {
+            background: var(--approved);
+            color: white;
+        }
+
+        .step.active .step-icon {
+            background: var(--pending);
+            color: white;
+        }
+
+        .step.pending .step-icon {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .step-label {
+            font-size: 0.7rem;
+            color: #6c757d;
+        }
+
+        .filter-tabs {
+            background: white;
+            border-radius: 10px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .filter-tab {
+            background: none;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            color: #6c757d;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin: 0 0.2rem;
+        }
+
+        .filter-tab.active {
+            background: var(--gradient);
+            color: white;
+        }
+
+        .no-applications {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .action-buttons {
+            margin-top: 1rem;
+        }
+
+        .btn-outline-primary {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .deadline-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid var(--pending);
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--pending);
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-graduation-cap me-2"></i>Scholarship Finder
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="#"><i class="fas fa-search me-1"></i>Browse</a>
+                <a class="nav-link active" href="#"><i class="fas fa-file-alt me-1"></i>My Applications</a>
+                <a class="nav-link" href="#"><i class="fas fa-comment me-1"></i>Feedback</a>
+                <a class="nav-link" href="#"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1 class="mb-2">My Scholarship Applications</h1>
+            <p class="mb-0">Track your scholarship application status and manage your submissions</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="stats-container">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card total">
+                        <div class="stat-number" style="color: var(--secondary);">12</div>
+                        <div class="stat-label">Total Applied</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card pending">
+                        <div class="stat-number" style="color: var(--pending);">8</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card approved">
+                        <div class="stat-number" style="color: var(--approved);">3</div>
+                        <div class="stat-label">Approved</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stat-card rejected">
+                        <div class="stat-number" style="color: var(--rejected);">1</div>
+                        <div class="stat-label">Rejected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">All Applications</button>
+            <button class="filter-tab" data-filter="pending">Pending</button>
+            <button class="filter-tab" data-filter="approved">Approved</button>
+            <button class="filter-tab" data-filter="rejected">Rejected</button>
+            <button class="filter-tab" data-filter="under-review">Under Review</button>
+        </div>
+
+        <!-- Applications List -->
+        <div id="applicationsList">
+            <!-- Application 1 - Approved -->
+            <div class="application-card" data-status="approved">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="scholarship-name">Central Sector Scheme</div>
+                        <div class="application-date">
+                            <i class="fas fa-calendar me-1"></i>Applied on: March 15, 2025
+                        </div>
+                        <div class="mb-2">
+                            <span class="status-badge status-approved">
+                                <i class="fas fa-check-circle me-1"></i>Approved
+                            </span>
+                            <span class="badge bg-success ms-2">₹20,000/year</span>
+                        </div>
+                        <p class="text-muted mb-2">Merit-based scholarship for engineering students</p>
+                        
+                        <!-- Progress Steps -->
+                        <div class="progress-section">
+                            <div class="progress-steps">
+                                <div class="step completed">
+                                    <div class="step-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="step-label">Applied</div>
+                                </div>
+                                <div class="step completed">
+                                    <div class="step-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="step-label">Reviewed</div>
+                                </div>
+                                <div class="step completed">
+                                    <div class="step-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="step-label">Verified</div>
+                                </div>
+                                <div class="step completed">
+                                    <div class="step-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="step-label">Approved</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="action-buttons">
+                            <button class="btn btn-outline-primary btn-sm mb-2">
+                                <i class="fas fa-download me-1"></i>Download Certificate
+                            </button>
+                            <br>
+                            <button class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application 2 - Under Review -->
+            <div class="application-card" data-status="under-review">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="scholarship-name">AICTE Pragati Scholarship</div>
+                        <div class="application-date">
+                            <i class="fas fa-calendar me-1"></i>Applied on: April 2, 2025
+                        </div>
+                        <div class="mb-2">
+                            <span class="status-badge status-under-review">
+                                <i class="fas fa-hourglass-half me-1"></i>Under Review
+                            </span>
+                            <span class="badge bg-info ms-2">₹30,000/year</span>
+                        </div>
+                        <p class="text-muted mb-2">Scholarship for girl students in technical education</p>
+                        
+                        <!-- Progress Steps -->
+                        <div class="progress-section">
+                            <div class="progress-steps">
+                                <div class="step completed">
+                                    <div class="step-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="step-label">Applied</div>
+                                </div>
+                                <div class="step completed">
+                                    <div class="step-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="step-label">Reviewed</div>
+                                </div>
+                                <div class="step active">
+                                    <div class="step-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="step-label">Verification</div>
+                                </div>
+                                <div class="step pending">
+                                    <div class="step-icon">3</div>
+                                    <div class="step-label">Decision</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="deadline-warning">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Document verification deadline: May 15, 2025
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="action-buttons">
+                            <button class="btn btn-outline-primary btn-sm mb-2">
+                                <i class="fas fa-upload me-1"></i>Upload Documents
+                            </button>
+                            <br>
+                            <button class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application 3 - Pending -->
+            <div class="application-card" data-status="pending">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="scholarship-name">Reliance Foundation Scholarship</div>
+                        <div class="application-date">
+                            <i class="fas fa-calendar me-1"></i>Applied on: July 20, 2025
+                        </div>
+                        <div class="mb-2">
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock me-1"></i>Pending
+                            </span>
+                            <span class="badge bg-warning ms-2">Up to ₹6,00,000</span>
+                        </div>
+                        <p class="text-muted mb-2">Merit-based scholarship for undergraduate students</p>
+                        
+                        <!-- Progress Steps -->
+                        <div class="progress-section">
+                            <div class="progress-steps">
+                                <div class="step completed">
+                                    <div class="step-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="step-label">Applied</div>
+                                </div>
+                                <div class="step active">
+                                    <div class="step-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="step-label">Initial Review</div>
+                                </div>
+                                <div class="step pending">
+                                    <div class="step-icon">2</div>
+                                    <div class="step-label">Verification</div>
+                                </div>
+                                <div class="step pending">
+                                    <div class="step-icon">3</div>
+                                    <div class="step-label">Decision</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="action-buttons">
+                            <button class="btn btn-outline-primary btn-sm mb-2">
+                                <i class="fas fa-edit me-1"></i>Edit Application
+                            </button>
+                            <br>
+                            <button class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application 4 - Rejected -->
+            <div class="application-card" data-status="rejected">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="scholarship-name">INSPIRE Scholarship</div>
+                        <div class="application-date">
+                            <i class="fas fa-calendar me-1"></i>Applied on: February 10, 2025
+                        </div>
+                        <div class="mb-2">
+                            <span class="status-badge status-rejected">
+                                <i class="fas fa-times-circle me-1"></i>Rejected
+                            </span>
+                            <span class="badge bg-secondary ms-2">₹80,000/year</span>
+                        </div>
+                        <p class="text-muted mb-2">Research scholarship for basic sciences students</p>
+                        <p class="text-danger small">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Reason: Academic percentage below required threshold (85% required)
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="action-buttons">
+                            <button class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-eye me-1"></i>View Feedback
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="no-applications" style="display: none;">
+            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+            <h4>No applications found</h4>
+            <p>You haven't applied for any scholarships in this category yet.</p>
+            <a href="#" class="btn btn-primary">Browse Scholarships</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            const applicationCards = document.querySelectorAll('.application-card');
+            const noResults = document.getElementById('noResults');
+
+            // Filter functionality
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+                    
+                    // Update active tab
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Filter applications
+                    let visibleCount = 0;
+                    applicationCards.forEach(card => {
+                        const status = card.getAttribute('data-status');
+                        if (filter === 'all' || status === filter) {
+                            card.style.display = 'block';
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    
+                    // Show/hide no results message
+                    if (visibleCount === 0) {
+                        noResults.style.display = 'block';
+                    } else {
+                        noResults.style.display = 'none';
+                    }
+                });
+            });
+
+            // Add smooth hover effects
+            applicationCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-3px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+    <script src="js/logout.js"></script>
+
+</body>
+</html>
