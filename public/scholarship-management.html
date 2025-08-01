@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scholarship Management</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .action-btn { margin-right: 5px; }
+    .table-responsive { max-height: 70vh; overflow-y: auto; }
+    .modal-lg { max-width: 800px; }
+    .badge { font-size: 0.9em; padding: 5px 10px; }
+    #scholarshipsTable tr:hover { background-color: #f8f9fa; }
+    .status-badge { min-width: 70px; display: inline-block; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">🎓 Scholarship Management</h1>
+    
+    <!-- Search and Add Section -->
+    <div class="d-flex justify-content-between mb-4">
+      <div class="input-group" style="width: 300px;">
+        <input type="text" id="searchScholarships" class="form-control" placeholder="Search scholarships...">
+        <button class="btn btn-outline-secondary" onclick="searchScholarships()">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addScholarshipModal">
+        <i class="fas fa-plus"></i> Add Scholarship
+      </button>
+    </div>
+
+    <!-- Scholarships Table -->
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th>Title</th>
+            <th>Amount</th>
+            <th>Deadline</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="scholarshipsTableBody">
+          <!-- Scholarships will be loaded here via JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Scholarship Modal -->
+  <div class="modal fade" id="addScholarshipModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add New Scholarship</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addScholarshipForm">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Title*</label>
+                <input type="text" class="form-control" name="title" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Provider*</label>
+                <input type="text" class="form-control" name="provider" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Amount*</label>
+                <input type="text" class="form-control" name="amount" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Deadline*</label>
+                <input type="date" class="form-control" name="deadline" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="description" rows="3"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Eligibility Criteria</label>
+                <textarea class="form-control" name="eligibility" rows="2"></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="addScholarship()">Save Scholarship</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Scholarship Modal -->
+  <div class="modal fade" id="editScholarshipModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Scholarship</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editScholarshipForm">
+            <input type="hidden" id="editScholarshipId">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Title*</label>
+                <input type="text" class="form-control" id="editTitle" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Provider*</label>
+                <input type="text" class="form-control" id="editProvider" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Amount*</label>
+                <input type="text" class="form-control" id="editAmount" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Deadline*</label>
+                <input type="date" class="form-control" id="editDeadline" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" id="editDescription" rows="3"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Eligibility Criteria</label>
+                <textarea class="form-control" id="editEligibility" rows="2"></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="updateScholarship()">Update Scholarship</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap & jQuery -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- JavaScript for API Calls -->
+  <script>
+    // Load scholarships on page load
+    $(document).ready(function() {
+      fetchScholarships();
+    });
+
+    // Fetch all scholarships
+    function fetchScholarships() {
+      showLoading(true);
+      $.get('/api/scholarships')
+        .done(function(data) {
+          renderScholarships(data.data || []);
+        })
+        .fail(function(err) {
+          console.error('Error:', err);
+          alert('Failed to load scholarships');
+        })
+        .always(function() {
+          showLoading(false);
+        });
+    }
+
+    // Render scholarships to table
+    function renderScholarships(scholarships) {
+      const tableBody = $('#scholarshipsTableBody');
+      tableBody.empty();
+      
+      if (scholarships.length === 0) {
+        tableBody.append('<tr><td colspan="5" class="text-center">No scholarships found</td></tr>');
+        return;
+      }
+
+      scholarships.forEach(scholarship => {
+        const deadline = new Date(scholarship.deadline);
+        const now = new Date();
+        const isActive = deadline > now;
+        const statusBadge = isActive 
+          ? '<span class="badge bg-success status-badge">Active</span>'
+          : '<span class="badge bg-danger status-badge">Expired</span>';
+
+        tableBody.append(`
+          <tr>
+            <td>${scholarship.title || 'N/A'}</td>
+            <td>${scholarship.amount ? '$' + scholarship.amount : 'N/A'}</td>
+            <td>${deadline.toLocaleDateString()}</td>
+            <td>${statusBadge}</td>
+            <td>
+              <button class="btn btn-sm btn-warning action-btn" onclick="openEditModal('${scholarship._id}')">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-danger action-btn" onclick="deleteScholarship('${scholarship._id}')">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </td>
+          </tr>
+        `);
+      });
+    }
+
+    // Add new scholarship
+    function addScholarship() {
+      const formData = {
+        title: $('input[name="title"]').val(),
+        description: $('textarea[name="description"]').val(),
+        amount: $('input[name="amount"]').val(),
+        deadline: $('input[name="deadline"]').val(),
+        provider: $('input[name="provider"]').val(),
+        eligibility: $('textarea[name="eligibility"]').val()
+      };
+
+      if (!validateScholarshipForm(formData)) return;
+
+      $.ajax({
+        url: '/api/scholarships',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
+        success: function() {
+          $('#addScholarshipModal').modal('hide');
+          $('#addScholarshipForm')[0].reset();
+          fetchScholarships();
+          showAlert('Scholarship added successfully!', 'success');
+        },
+        error: function(err) {
+          console.error('Error:', err);
+          showAlert('Failed to add scholarship: ' + (err.responseJSON?.error || err.statusText), 'danger');
+        }
+      });
+    }
+
+    // Open edit modal with scholarship data
+    function openEditModal(id) {
+      $.get(`/api/scholarships/${id}`)
+        .done(function(data) {
+          const scholarship = data.data;
+          $('#editScholarshipId').val(scholarship._id);
+          $('#editTitle').val(scholarship.title);
+          $('#editDescription').val(scholarship.description);
+          $('#editAmount').val(scholarship.amount);
+          $('#editDeadline').val(scholarship.deadline.split('T')[0]);
+          $('#editProvider').val(scholarship.provider);
+          $('#editEligibility').val(scholarship.eligibility);
+          $('#editScholarshipModal').modal('show');
+        })
+        .fail(function(err) {
+          console.error('Error:', err);
+          showAlert('Failed to load scholarship details', 'danger');
+        });
+    }
+
+    // Update scholarship
+    function updateScholarship() {
+      const id = $('#editScholarshipId').val();
+      const formData = {
+        title: $('#editTitle').val(),
+        description: $('#editDescription').val(),
+        amount: $('#editAmount').val(),
+        deadline: $('#editDeadline').val(),
+        provider: $('#editProvider').val(),
+        eligibility: $('#editEligibility').val()
+      };
+
+      if (!validateScholarshipForm(formData)) return;
+
+      $.ajax({
+        url: `/api/scholarships/${id}`,
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
+        success: function() {
+          $('#editScholarshipModal').modal('hide');
+          fetchScholarships();
+          showAlert('Scholarship updated successfully!', 'success');
+        },
+        error: function(err) {
+          console.error('Error:', err);
+          showAlert('Failed to update scholarship: ' + (err.responseJSON?.error || err.statusText), 'danger');
+        }
+      });
+    }
+
+    // Delete scholarship
+    function deleteScholarship(id) {
+      if (!confirm('Are you sure you want to delete this scholarship? This action cannot be undone.')) return;
+
+      $.ajax({
+        url: `/api/scholarships/${id}`,
+        type: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
+        success: function() {
+          fetchScholarships();
+          showAlert('Scholarship deleted successfully!', 'success');
+        },
+        error: function(err) {
+          console.error('Error:', err);
+          showAlert('Failed to delete scholarship: ' + (err.responseJSON?.error || err.statusText), 'danger');
+        }
+      });
+    }
+
+    // Search scholarships
+    function searchScholarships() {
+      const searchTerm = $('#searchScholarships').val().toLowerCase();
+      $('#scholarshipsTableBody tr').each(function() {
+        const rowText = $(this).text().toLowerCase();
+        $(this).toggle(rowText.includes(searchTerm));
+      });
+    }
+
+    // Validate scholarship form
+    function validateScholarshipForm(data) {
+      if (!data.title || !data.amount || !data.deadline || !data.provider) {
+        showAlert('Please fill all required fields', 'warning');
+        return false;
+      }
+      return true;
+    }
+
+    // Show loading state
+    function showLoading(show) {
+      if (show) {
+        $('#scholarshipsTableBody').html('<tr><td colspan="5" class="text-center"><div class="spinner-border text-primary" role="status"></div></td></tr>');
+      }
+    }
+
+    // Show alert message
+    function showAlert(message, type) {
+      const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `);
+      $('.container').prepend(alert);
+      setTimeout(() => alert.alert('close'), 5000);
+    }
+  </script>
+</body>
+</html>
