@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Stats | Scholarship Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css" rel="stylesheet">
+  <style>
+    .stat-card {
+      border-left: 4px solid;
+      transition: transform 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+    }
+    .stat-card.scholarships { border-color: #4e73df; }
+    .stat-card.users { border-color: #1cc88a; }
+    .stat-card.applications { border-color: #36b9cc; }
+    .chart-container {
+      position: relative;
+      height: 300px;
+    }
+    .progress {
+      height: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1><i class="fas fa-chart-bar me-2"></i> Dashboard Statistics</h1>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="timeRangeDropdown" data-bs-toggle="dropdown">
+          <i class="fas fa-calendar-alt me-2"></i> Last 6 Months
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item active" href="#">Last 6 Months</a></li>
+          <li><a class="dropdown-item" href="#">This Year</a></li>
+          <li><a class="dropdown-item" href="#">All Time</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+      <!-- Scholarships Card -->
+      <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card stat-card scholarships h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h5 class="card-title">Scholarships</h5>
+                <h2 class="mb-0" id="totalScholarships">0</h2>
+              </div>
+              <div class="icon-circle bg-primary text-white">
+                <i class="fas fa-award"></i>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-6">
+                <h6 class="text-success">Active</h6>
+                <p class="h4" id="activeScholarships">0</p>
+              </div>
+              <div class="col-6">
+                <h6 class="text-danger">Expired</h6>
+                <p class="h4" id="expiredScholarships">0</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users Card -->
+      <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card stat-card users h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h5 class="card-title">Users</h5>
+                <h2 class="mb-0" id="totalUsers">0</h2>
+              </div>
+              <div class="icon-circle bg-success text-white">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+            <hr>
+            <div>
+              <h6>Profile Completion</h6>
+              <div class="progress mb-2">
+                <div id="profileCompletionBar" class="progress-bar bg-success" 
+                  role="progressbar" style="width: 0%"></div>
+              </div>
+              <div class="d-flex justify-content-between">
+                <small>Complete: <span id="completeProfiles">0</span></small>
+                <small>Incomplete: <span id="incompleteProfiles">0</span></small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Applications Card -->
+      <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card stat-card applications h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h5 class="card-title">Applications</h5>
+                <h2 class="mb-0" id="totalApplications">0</h2>
+              </div>
+              <div class="icon-circle bg-info text-white">
+                <i class="fas fa-file-alt"></i>
+              </div>
+            </div>
+            <hr>
+            <div>
+              <h6>Last 30 Days</h6>
+              <p class="h4 text-primary" id="lastMonthApps">0</p>
+              <small class="text-muted">
+                <span id="appTrendIndicator"></span>
+                vs previous period
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+      <!-- Applications Trend -->
+      <div class="col-lg-8 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+              Applications Trend
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="applicationsChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Providers -->
+      <div class="col-lg-4 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+              Top Scholarship Providers
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="providersChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Stats -->
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+          Detailed Statistics
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead class="table-light">
+              <tr>
+                <th>Metric</th>
+                <th>Count</th>
+                <th>Percentage</th>
+                <th>Trend</th>
+              </tr>
+            </thead>
+            <tbody id="detailedStatsBody">
+              <!-- Will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.0.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.1.0"></script>
+
+  <!-- Main JavaScript -->
+  <script>
+    // DOM Elements
+    const applicationsChartCtx = document.getElementById('applicationsChart').getContext('2d');
+    const providersChartCtx = document.getElementById('providersChart').getContext('2d');
+    let applicationsChart, providersChart;
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', fetchStats);
+
+    // Fetch statistics from API
+    async function fetchStats() {
+      try {
+        showLoading(true);
+        
+        const response = await fetch('/api/stats/dashboard', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to load statistics');
+        
+        const data = await response.json();
+        renderStats(data.stats);
+        
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error loading statistics: ' + error.message);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Render statistics to the page
+    function renderStats(stats) {
+      // Update cards
+      document.getElementById('totalScholarships').textContent = stats.scholarships.total;
+      document.getElementById('activeScholarships').textContent = stats.scholarships.active;
+      document.getElementById('expiredScholarships').textContent = stats.scholarships.expired;
+      
+      document.getElementById('totalUsers').textContent = stats.users.total;
+      document.getElementById('completeProfiles').textContent = stats.users.withProfile;
+      document.getElementById('incompleteProfiles').textContent = stats.users.withoutProfile;
+      
+      const completionPercent = Math.round((stats.users.withProfile / stats.users.total) * 100);
+      document.getElementById('profileCompletionBar').style.width = `${completionPercent}%`;
+      
+      document.getElementById('totalApplications').textContent = stats.applications.total;
+      document.getElementById('lastMonthApps').textContent = stats.applications.lastMonth;
+      
+      // Update trend indicator
+      const trendIndicator = document.getElementById('appTrendIndicator');
+      if (stats.applications.lastMonth > (stats.applications.total / 12)) {
+        trendIndicator.innerHTML = '<i class="fas fa-arrow-up text-success"></i>';
+      } else {
+        trendIndicator.innerHTML = '<i class="fas fa-arrow-down text-danger"></i>';
+      }
+
+      // Render charts
+      renderApplicationsChart(stats.applications.monthlyTrend);
+      renderProvidersChart(stats.scholarships.byProvider);
+
+      // Render detailed stats table
+      renderDetailedStats(stats);
+    }
+
+    // Render applications trend chart
+    function renderApplicationsChart(monthlyData) {
+      if (applicationsChart) applicationsChart.destroy();
+      
+      applicationsChart = new Chart(applicationsChartCtx, {
+        type: 'line',
+        data: {
+          labels: monthlyData.map(m => `${m.name} ${m.year}`),
+          datasets: [{
+            label: 'Applications',
+            data: monthlyData.map(m => m.count),
+            backgroundColor: 'rgba(78, 115, 223, 0.05)',
+            borderColor: 'rgba(78, 115, 223, 1)',
+            pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+            pointBorderColor: '#fff',
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+            pointHoverBorderColor: '#fff',
+            pointHitRadius: 10,
+            pointBorderWidth: 2,
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: "rgb(255,255,255)",
+              bodyFontColor: "#858796",
+              titleMarginBottom: 10,
+              titleFontColor: '#6e707e',
+              titleFontSize: 14,
+              borderColor: '#dddfeb',
+              borderWidth: 1,
+              xPadding: 15,
+              yPadding: 15,
+              displayColors: false,
+              intersect: false,
+              mode: 'index',
+              caretPadding: 10,
+              callbacks: {
+                label: function(context) {
+                  return `${context.dataset.label}: ${context.parsed.y}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Render providers chart
+    function renderProvidersChart(providersData) {
+      if (providersChart) providersChart.destroy();
+      
+      providersChart = new Chart(providersChartCtx, {
+        type: 'doughnut',
+        data: {
+          labels: providersData.map(p => p._id || 'Unknown'),
+          datasets: [{
+            data: providersData.map(p => p.count),
+            backgroundColor: [
+              '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'
+            ],
+            hoverBackgroundColor: [
+              '#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617'
+            ],
+            hoverBorderColor: "rgba(234, 236, 244, 1)",
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                usePointStyle: true,
+                padding: 20
+              }
+            },
+            tooltip: {
+              backgroundColor: "rgb(255,255,255)",
+              bodyFontColor: "#858796",
+              borderColor: '#dddfeb',
+              borderWidth: 1,
+              displayColors: false,
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = Math.round((value / total) * 100);
+                  return `${label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          },
+          cutout: '70%'
+        }
+      });
+    }
+
+    // Render detailed stats table
+    function renderDetailedStats(stats) {
+      const tableBody = document.getElementById('detailedStatsBody');
+      
+      const rows = [
+        {
+          metric: 'Active Scholarships',
+          count: stats.scholarships.active,
+          percentage: Math.round((stats.scholarships.active / stats.scholarships.total) * 100),
+          trend: stats.scholarships.active > (stats.scholarships.total / 2) ? 'up' : 'down'
+        },
+        {
+          metric: 'Users with Complete Profiles',
+          count: stats.users.withProfile,
+          percentage: Math.round((stats.users.withProfile / stats.users.total) * 100),
+          trend: stats.users.withProfile > (stats.users.total / 2) ? 'up' : 'down'
+        },
+        {
+          metric: 'Applications (Last 30 Days)',
+          count: stats.applications.lastMonth,
+          percentage: stats.applications.total > 0 ? 
+            Math.round((stats.applications.lastMonth / stats.applications.total) * 100) : 0,
+          trend: stats.applications.lastMonth > (stats.applications.total / 12) ? 'up' : 'down'
+        }
+      ];
+
+      tableBody.innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.metric}</td>
+          <td>${row.count}</td>
+          <td>
+            <div class="progress" style="height: 20px;">
+              <div class="progress-bar bg-primary" role="progressbar" 
+                style="width: ${row.percentage}%">${row.percentage}%</div>
+            </div>
+          </td>
+          <td>
+            <i class="fas fa-arrow-${row.trend} text-${row.trend === 'up' ? 'success' : 'danger'}"></i>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Show/hide loading state
+    function showLoading(show) {
+      const loader = document.createElement('div');
+      loader.className = 'position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center';
+      loader.style.backgroundColor = 'rgba(255,255,255,0.7)';
+      loader.style.zIndex = '9999';
+      loader.innerHTML = `
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      `;
+      
+      if (show) {
+        document.body.appendChild(loader);
+      } else {
+        const existingLoader = document.querySelector('.position-fixed.top-0');
+        if (existingLoader) existingLoader.remove();
+      }
+    }
+  </script>
+</body>
+</html>
