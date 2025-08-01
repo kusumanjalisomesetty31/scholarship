@@ -98,14 +98,14 @@
       };
 
       try {
-        const response = await fetch('/api/scholarships/add', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-          },
-          body: JSON.stringify(scholarshipData)
-        });
+        const response = await fetch('/api/scholarships', {  // Remove '/add'
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+  },
+  body: JSON.stringify(scholarshipData)
+});
 
         const data = await response.json();
         
