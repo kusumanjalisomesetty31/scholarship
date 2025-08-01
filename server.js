@@ -8,7 +8,6 @@ const path = require('path');
 const session = require('express-session');
 const cors = require('cors');
 const fs = require('fs');
-const jwt = require('jsonwebtoken');
 
 const app = express();
 
@@ -137,19 +136,12 @@ const scholarshipSchema = new mongoose.Schema({
     phone: String,
     website: String
   },
-  isActive: { type: Boolean, default: true },
-  postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 
 const feedbackSchema = new mongoose.Schema({
   email: { type: String, required: true },
-  responses: {
-    q1: { type: String, required: true },
-    q2: { type: String, required: true },
-    q3: { type: String, required: true },
-    q4: { type: String, required: true },
-    suggestions: { type: String }
-  },
+  message: { type: String, required: true },
   timestamp: { type: Date, default: Date.now }
 });
 
@@ -193,177 +185,7 @@ const parseIncome = (incomeString) => {
   return parseFloat(cleanIncome) || 0;
 };
 
-// Middleware
-const authenticateAdmin = async (req, res, next) => {
-  try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Authentication required' 
-      });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    const admin = await User.findOne({ 
-      _id: decoded._id, 
-      role: 'admin' 
-    });
-
-    if (!admin) {
-      return res.status(403).json({ 
-        success: false,
-        message: 'Admin access required' 
-      });
-    }
-
-    req.admin = admin;
-    next();
-  } catch (error) {
-    res.status(401).json({ 
-      success: false,
-      message: 'Invalid or expired token' 
-    });
-  }
-};
-
-const authenticateUser = async (req, res, next) => {
-  try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Authentication required' 
-      });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    const user = await User.findOne({ 
-      _id: decoded._id
-    });
-
-    if (!user) {
-      return res.status(403).json({ 
-        success: false,
-        message: 'User not found' 
-      });
-    }
-
-    req.user = user;
-    next();
-  } catch (error) {
-    res.status(401).json({ 
-      success: false,
-      message: 'Invalid or expired token' 
-    });
-  }
-};
-
-// Scholarship Controller Functions
-const createScholarship = async (req, res) => {
-  try {
-    const scholarship = new Scholarship({
-      ...req.body,
-      postedBy: req.user.id
-    });
-    await scholarship.save();
-    res.status(201).json({ success: true, data: scholarship });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
-  }
-};
-
-const getScholarships = async (req, res) => {
-  try {
-    const scholarships = await Scholarship.find().sort({ deadline: 1 });
-    res.status(200).json({ success: true, data: scholarships });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-const getScholarship = async (req, res) => {
-  try {
-    const scholarship = await Scholarship.findById(req.params.id);
-    if (!scholarship) {
-      return res.status(404).json({ success: false, error: 'Not found' });
-    }
-    res.status(200).json({ success: true, data: scholarship });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-const updateScholarship = async (req, res) => {
-  try {
-    const scholarship = await Scholarship.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!scholarship) {
-      return res.status(404).json({ success: false, error: 'Not found' });
-    }
-    res.status(200).json({ success: true, data: scholarship });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
-  }
-};
-
-const deleteScholarship = async (req, res) => {
-  try {
-    const scholarship = await Scholarship.findByIdAndDelete(req.params.id);
-    if (!scholarship) {
-      return res.status(404).json({ success: false, error: 'Not found' });
-    }
-    res.status(200).json({ success: true, data: {} });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-
 // Routes
-
-// Health Check Route (No auth required)
-app.get('/api/health', async (req, res) => {
-  try {
-    const userCount = await User.countDocuments();
-    res.json({
-      success: true,
-      database: 'connected',
-      userCount: userCount,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      database: 'disconnected',
-      error: error.message
-    });
-  }
-});
-
-// Test Auth Route
-app.get('/api/test-auth', authenticateAdmin, async (req, res) => {
-  res.json({
-    success: true,
-    message: 'Authentication working',
-    admin: {
-      id: req.admin._id,
-      name: req.admin.name,
-      email: req.admin.email
-    }
-  });
-});
-
-// Scholarship Routes
-app.post('/api/scholarships', authenticateUser, createScholarship);
-app.get('/api/scholarships', getScholarships);
-app.get('/api/scholarships/:id', getScholarship);
-app.put('/api/scholarships/:id', authenticateUser, updateScholarship);
-app.delete('/api/scholarships/:id', authenticateUser, deleteScholarship);
 
 // Auth Routes
 app.post('/register', async (req, res) => {
@@ -409,12 +231,6 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign(
-      { _id: user._id.toString() },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '8h' }
-    );
-
     req.session.user = {
       id: user._id,
       email: user.email,
@@ -424,7 +240,6 @@ app.post('/login', async (req, res) => {
 
     res.json({ 
       message: 'Login successful',
-      token,
       user: {
         name: user.name,
         email: user.email,
@@ -437,46 +252,38 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/api/admin/login', async (req, res) => {
+app.post('/admin/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const admin = await User.findOne({ email, role: 'admin' });
 
     if (!admin) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Invalid admin credentials' 
-      });
+      return res.status(401).json({ error: 'Invalid admin credentials' });
     }
 
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Invalid admin credentials' 
-      });
+      return res.status(401).json({ error: 'Invalid admin credentials' });
     }
 
-    const token = jwt.sign(
-      { _id: admin._id.toString(), role: admin.role },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '8h' }
-    );
+    req.session.user = {
+      id: admin._id,
+      email: admin.email,
+      name: admin.name,
+      role: admin.role
+    };
 
     res.json({ 
-      success: true,
-      token,
-      admin: {
+      message: 'Admin login successful',
+      user: {
         name: admin.name,
         email: admin.email,
         role: admin.role
       }
     });
   } catch (err) {
-    res.status(500).json({ 
-      success: false,
-      message: 'Login failed' 
-    });
+    console.error('Admin login error:', err);
+    res.status(500).json({ error: 'Admin login failed' });
   }
 });
 
@@ -532,16 +339,18 @@ app.post('/api/profile/update', upload.fields([
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Handle file uploads
     let profilePhoto = user.profile?.profilePhoto;
     let marksheet = user.profile?.marksheet;
 
     if (req.files?.profilePhoto?.[0]) {
-      profilePhoto = `/uploads/${req.files.profilePhoto[0].filename}`;
+      profilePhoto = /uploads/${req.files.profilePhoto[0].filename};
     }
     if (req.files?.marksheet?.[0]) {
-      marksheet = `/uploads/${req.files.marksheet[0].filename}`;
+      marksheet = /uploads/${req.files.marksheet[0].filename};
     }
 
+    // Parse scholarshipTypes
     let parsedScholarshipTypes = [];
     if (scholarshipTypes) {
       parsedScholarshipTypes = Array.isArray(scholarshipTypes) ? 
@@ -549,6 +358,7 @@ app.post('/api/profile/update', upload.fields([
         JSON.parse(scholarshipTypes);
     }
 
+    // Calculate profile completion
     const requiredFields = [
       fullName, phone, dateOfBirth, gender, category,
       currentEducation, fieldOfStudy, institution, cgpa,
@@ -558,6 +368,7 @@ app.post('/api/profile/update', upload.fields([
     const filledFields = requiredFields.filter(field => field && field.trim() !== '').length;
     const completionPercentage = Math.round((filledFields / requiredFields.length) * 100);
 
+    // Update profile
     user.profile = {
       ...user.profile,
       fullName: fullName || user.profile?.fullName,
@@ -599,21 +410,67 @@ app.post('/api/profile/update', upload.fields([
   }
 });
 
-// Scholarship Routes (additional)
-app.get('/api/scholarships/active', async (req, res) => {
+// Scholarship Routes
+app.get('/api/scholarships', async (req, res) => {
   try {
-    const scholarships = await Scholarship.find({ isActive: true })
-      .sort({ createdAt: -1 });
-      
-    res.json({ 
-      success: true, 
-      scholarships 
+    const scholarships = await Scholarship.find({}).sort({ createdAt: -1 });
+    res.json({ success: true, scholarships });
+  } catch (error) {
+    console.error('Error fetching scholarships:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/scholarships/add', async (req, res) => {
+  try {
+    const scholarship = new Scholarship(req.body);
+    await scholarship.save();
+    res.status(201).json({
+      success: true,
+      message: 'Scholarship added successfully',
+      scholarship
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch scholarships'
+    console.error('Error adding scholarship:', error);
+    res.status(500).json({ error: 'Failed to add scholarship' });
+  }
+});
+
+app.put('/api/scholarships/:id', async (req, res) => {
+  try {
+    const scholarship = await Scholarship.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true }
+    );
+    
+    if (!scholarship) {
+      return res.status(404).json({ error: 'Scholarship not found' });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Scholarship updated successfully',
+      scholarship
     });
+  } catch (error) {
+    console.error('Error updating scholarship:', error);
+    res.status(500).json({ error: 'Failed to update scholarship' });
+  }
+});
+
+app.delete('/api/scholarships/:id', async (req, res) => {
+  try {
+    const scholarship = await Scholarship.findByIdAndDelete(req.params.id);
+    
+    if (!scholarship) {
+      return res.status(404).json({ error: 'Scholarship not found' });
+    }
+    
+    res.json({ success: true, message: 'Scholarship deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting scholarship:', error);
+    res.status(500).json({ error: 'Failed to delete scholarship' });
   }
 });
 
@@ -658,14 +515,14 @@ app.post('/api/check-eligibility', async (req, res) => {
         isEligible = false;
         checks.push({
           criterion: 'CGPA',
-          required: `${criteria.minCgpa} - ${criteria.maxCgpa}`,
+          required: ${criteria.minCgpa} - ${criteria.maxCgpa},
           userValue: userCgpa,
           passed: false
         });
       } else {
         checks.push({
           criterion: 'CGPA',
-          required: `${criteria.minCgpa} - ${criteria.maxCgpa}`,
+          required: ${criteria.minCgpa} - ${criteria.maxCgpa},
           userValue: userCgpa,
           passed: true
         });
@@ -714,15 +571,15 @@ app.post('/api/check-eligibility', async (req, res) => {
         isEligible = false;
         checks.push({
           criterion: 'Family Income',
-          required: `₹${criteria.minFamilyIncome.toLocaleString()} - ₹${criteria.maxFamilyIncome.toLocaleString()}`,
-          userValue: `₹${userIncome.toLocaleString()}`,
+          required: ₹${criteria.minFamilyIncome.toLocaleString()} - ₹${criteria.maxFamilyIncome.toLocaleString()},
+          userValue: ₹${userIncome.toLocaleString()},
           passed: false
         });
       } else {
         checks.push({
           criterion: 'Family Income',
-          required: `₹${criteria.minFamilyIncome.toLocaleString()} - ₹${criteria.maxFamilyIncome.toLocaleString()}`,
-          userValue: `₹${userIncome.toLocaleString()}`,
+          required: ₹${criteria.minFamilyIncome.toLocaleString()} - ₹${criteria.maxFamilyIncome.toLocaleString()},
+          userValue: ₹${userIncome.toLocaleString()},
           passed: true
         });
       }
@@ -771,15 +628,15 @@ app.post('/api/check-eligibility', async (req, res) => {
         isEligible = false;
         checks.push({
           criterion: 'Age',
-          required: `${criteria.minAge} - ${criteria.maxAge} years`,
-          userValue: `${userAge} years`,
+          required: ${criteria.minAge} - ${criteria.maxAge} years,
+          userValue: ${userAge} years,
           passed: false
         });
       } else {
         checks.push({
           criterion: 'Age',
-          required: `${criteria.minAge} - ${criteria.maxAge} years`,
-          userValue: `${userAge} years`,
+          required: ${criteria.minAge} - ${criteria.maxAge} years,
+          userValue: ${userAge} years,
           passed: true
         });
       }
@@ -810,6 +667,7 @@ app.post('/api/check-eligibility', async (req, res) => {
       });
     }
 
+    // Sort results
     eligibilityResults.sort((a, b) => {
       if (a.isEligible && !b.isEligible) return -1;
       if (!a.isEligible && b.isEligible) return 1;
@@ -826,7 +684,7 @@ app.post('/api/check-eligibility', async (req, res) => {
         cgpa: userCgpa,
         education: profile.currentEducation,
         field: profile.fieldOfStudy,
-        income: `₹${userIncome.toLocaleString()}`,
+        income: ₹${userIncome.toLocaleString()},
         age: userAge,
         gender: profile.gender,
         category: profile.category
@@ -841,22 +699,12 @@ app.post('/api/check-eligibility', async (req, res) => {
 // Feedback Routes
 app.post('/api/feedback', async (req, res) => {
   try {
-    const { email, responses } = req.body;
+    const { email, message } = req.body;
 
-    if (!email || !responses) {
+    if (!email || !message) {
       return res.status(400).json({ 
         success: false,
-        message: "Email and responses are required" 
-      });
-    }
-
-    const requiredQuestions = ['q1', 'q2', 'q3', 'q4'];
-    const missingQuestions = requiredQuestions.filter(q => !responses[q]);
-    
-    if (missingQuestions.length > 0) {
-      return res.status(400).json({ 
-        success: false,
-        message: `Please answer all required questions: ${missingQuestions.join(', ')}`
+        message: "Email and message are required" 
       });
     }
 
@@ -868,21 +716,11 @@ app.post('/api/feedback', async (req, res) => {
       });
     }
 
-    const newFeedback = await Feedback.create({ 
-      email,
-      responses: {
-        q1: responses.q1,
-        q2: responses.q2,
-        q3: responses.q3,
-        q4: responses.q4,
-        suggestions: responses.suggestions || ''
-      }
-    });
+    await Feedback.create({ email, message });
     
     res.json({ 
       success: true,
-      message: "Thank you for your feedback!",
-      feedback: newFeedback
+      message: "Thank you for your feedback!" 
     });
   } catch (err) {
     console.error("Error submitting feedback:", err);
@@ -896,26 +734,9 @@ app.post('/api/feedback', async (req, res) => {
 app.get('/api/admin/feedback', async (req, res) => {
   try {
     const feedbackList = await Feedback.find().sort({ timestamp: -1 });
-    
-    const calculateStats = (question) => {
-      const stats = {};
-      feedbackList.forEach(feedback => {
-        const response = feedback.responses[question];
-        stats[response] = (stats[response] || 0) + 1;
-      });
-      return stats;
-    };
-
     res.json({
       success: true,
-      feedback: feedbackList,
-      stats: {
-        q1: calculateStats('q1'),
-        q2: calculateStats('q2'),
-        q3: calculateStats('q3'),
-        q4: calculateStats('q4'),
-        totalResponses: feedbackList.length
-      }
+      feedback: feedbackList
     });
   } catch (err) {
     console.error("Error fetching feedback:", err);
@@ -926,63 +747,8 @@ app.get('/api/admin/feedback', async (req, res) => {
   }
 });
 
-app.get('/api/admin/feedback-stats', async (req, res) => {
-  try {
-    const feedbackList = await Feedback.find();
-    
-    const calculatePercentages = (question) => {
-      const stats = {};
-      feedbackList.forEach(feedback => {
-        const response = feedback.responses[question];
-        stats[response] = (stats[response] || 0) + 1;
-      });
-      
-      return Object.entries(stats).map(([option, count]) => ({
-        option,
-        count,
-        percentage: Math.round((count / feedbackList.length) * 100)
-      }));
-    };
-
-    res.json({
-      success: true,
-      stats: {
-        totalResponses: feedbackList.length,
-        questions: [
-          {
-            id: 'q1',
-            text: 'Overall experience with our scholarship portal',
-            options: calculatePercentages('q1')
-          },
-          {
-            id: 'q2',
-            text: 'Ease of finding relevant scholarships',
-            options: calculatePercentages('q2')
-          },
-          {
-            id: 'q3',
-            text: 'Satisfaction with scholarship matching results',
-            options: calculatePercentages('q3')
-          },
-          {
-            id: 'q4',
-            text: 'Likelihood to recommend our portal',
-            options: calculatePercentages('q4')
-          }
-        ]
-      }
-    });
-  } catch (err) {
-    console.error("Error fetching feedback stats:", err);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch feedback statistics"
-    });
-  }
-});
-
 // Admin Dashboard Routes
-app.get('/api/admin/scholarship-stats', authenticateAdmin, async (req, res) => {
+app.get('/api/admin/scholarship-stats', async (req, res) => {
   try {
     const total = await Scholarship.countDocuments();
     const active = await Scholarship.countDocuments({ isActive: true });
@@ -1010,7 +776,7 @@ app.get('/api/admin/scholarship-stats', authenticateAdmin, async (req, res) => {
   }
 });
 
-app.get('/api/admin/profile-stats', authenticateAdmin, async (req, res) => {
+app.get('/api/admin/profile-stats', async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const completeProfiles = await User.countDocuments({ 'profile.isProfileComplete': true });
@@ -1044,11 +810,6 @@ app.get('/api/admin/profile-stats', authenticateAdmin, async (req, res) => {
   }
 });
 
-// FIXED - Single Users Route (removed duplicates)
-
-
-// Debug route for testing database connection
-
 // Error Handling Middleware
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
@@ -1066,43 +827,15 @@ app.use((req, res) => {
     error: 'Endpoint not found' 
   });
 });
-app.get('/api/users', authenticateAdmin, async (req, res) => {
-  try {
-    const users = await User.find().select('-password');
-    res.json({ success: true, users });
-  } catch (err) {
-    res.status(500).json({ success: false, error: 'Failed to fetch users' });
-  }
-});
-
-
-// Database Connection Events
-mongoose.connection.on('connected', () => {
-  console.log('✅ MongoDB connected');
-});
-
-mongoose.connection.on('error', (err) => {
-  console.log('❌ MongoDB error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('❌ MongoDB disconnected');
-});
 
 // Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📁 File upload directory: ${uploadDir}`);
+  console.log(🚀 Server running on port ${PORT});
+  console.log(📁 File upload directory: ${uploadDir});
   console.log('🎓 Scholarship system ready!');
   console.log('🔧 Available admin routes:');
-  console.log('   - GET /api/health - System health check');
-  console.log('   - GET /api/test-auth - Test admin authentication');
-  console.log('   - GET /api/users - View all registered users');
-  console.log('   - GET /api/debug/users - Debug user data');
   console.log('   - GET /api/scholarships - View all scholarships');
-  console.log('   - GET /api/admin/scholarship-stats - View scholarship statistics');
+  console.log('   - GET /api/admin/scholarship-stats - View statistics');
   console.log('   - GET /api/admin/profile-stats - View user statistics');
-  console.log('   - GET /api/admin/feedback - View feedback responses');
-  console.log('   - GET /api/admin/feedback-stats - View feedback statistics');
 });
