@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scholarship Deadlines</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background-color: #f5f5f5;
+    }
+    .navbar {
+      background: linear-gradient(to right, #ff6600, #28a745);
+    }
+    .navbar-brand, .nav-link {
+      color: white !important;
+      font-weight: 600;
+    }
+    .navbar .nav-link:hover {
+      color: #fffacd !important;
+    }
+    h2 {
+      color: #ff6600;
+      margin-top: 30px;
+      font-weight: bold;
+    }
+    .card {
+      border: none;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .card-title {
+      color: #28a745;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <a class="navbar-brand" href="#">🎓 Scholarship Finder</a>
+      <div class="collapse navbar-collapse justify-content-end">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="main.html">🏠 Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="logout.php">🚪 Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container text-center">
+    <h3 class="mt-4">📅 Upcoming Scholarship Deadlines</h3>
+    <p>Welcome back, <span style="color:#ff6600;" id="welcome-username"></span>!</p>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
+      <div class="col">
+        <div class="card p-3 h-100">
+          <h5 class="card-title">National Merit Scholarship</h5>
+          <p class="card-text">Last Date: <strong>August 15, 2025</strong></p>
+          <p class="text-muted">For students with 90%+ marks and low income.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card p-3 h-100">
+          <h5 class="card-title">Girls Education Grant</h5>
+          <p class="card-text">Last Date: <strong>September 5, 2025</strong></p>
+          <p class="text-muted">Open for female students from rural areas.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card p-3 h-100">
+          <h5 class="card-title">Minority Student Scheme</h5>
+          <p class="card-text">Last Date: <strong>October 10, 2025</strong></p>
+          <p class="text-muted">Scholarship for minority students with family income below ₹2 lakh.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Fetch name using email from localStorage
+    window.addEventListener('DOMContentLoaded', async () => {
+      const email = localStorage.getItem('userEmail');
+      if (email) {
+        try {
+          const res = await fetch(`/api/user?email=${encodeURIComponent(email)}`);
+          const user = await res.json();
+          if (user && user.name) {
+            document.getElementById('welcome-username').textContent = user.name;
+          }
+        } catch (err) {
+          console.error('Error fetching user name:', err);
+        }
+      }
+    });
+
+    // Logout redirect
+    document.querySelectorAll('a[href="logout.php"]').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.removeItem('userEmail');
+        window.location.href = 'loginchoice.html';
+      });
+    });
+  </script>
+</body>
+</html>
