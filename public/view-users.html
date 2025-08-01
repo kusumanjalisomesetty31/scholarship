@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF‑8" />
+  <title>Admin Panel – View Users</title>
+  <style>
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+  </style>
+</head>
+<body>
+  <h1>Registered Users</h1>
+  <button id="refresh">Refresh</button>
+  <table id="users-table">
+    <thead>
+      <tr>
+        <th>Name</th><th>Email</th><th>Mobile</th><th>Role</th><th>Registered On</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const token = localStorage.getItem('adminToken'); // assume admin token stored here
+    if (!token) {
+      alert('Please log in as admin first.');
+      window.location.href = '/admin-login.html';
+    }
+
+    async function fetchUsers() {
+      const resp = await fetch('/api/users', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!resp.ok) {
+        alert('Failed to load users – please login again.');
+        return;
+      }
+      const users = await resp.json();
+      const tbody = document.querySelector('#users-table tbody');
+      tbody.innerHTML = '';
+      users.forEach(u => {
+        const tr = document.createElement('tr');
+        const regDate = new Date(u.createdAt || u._id).toLocaleString();
+        tr.innerHTML = `
+          <td>${u.name}</td>
+          <td>${u.email}</td>
+          <td>${u.mobile}</td>
+          <td>${u.role}</td>
+          <td>${regDate}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('refresh').onclick = fetchUsers;
+    fetchUsers();
+  </script>
+</body>
+</html>
