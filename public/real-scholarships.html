@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scholarship Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #28a745;
+      --secondary: #ff6600;
+      --light: #f8f9fa;
+    }
+    
+    body {
+      background-color: #fff;
+      color: #333;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .heading {
+      color: var(--secondary);
+      font-weight: 800;
+      margin: 30px 0;
+      text-align: center;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    
+    .heading:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+    }
+    
+    .card {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      overflow: hidden;
+      margin-bottom: 25px;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .card-header {
+      background-color: var(--primary);
+      color: white;
+      padding: 15px;
+      font-weight: 600;
+      border-bottom: none;
+    }
+    
+    .card-body {
+      padding: 25px;
+    }
+    
+    .scholarship-details {
+      margin-bottom: 20px;
+    }
+    
+    .detail-item {
+      display: flex;
+      margin-bottom: 10px;
+    }
+    
+    .detail-icon {
+      color: var(--secondary);
+      margin-right: 10px;
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+    
+    .btn-apply {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      padding: 8px 20px;
+      font-weight: 500;
+      transition: all 0.3s;
+      display: block;
+      width: 100%;
+      margin-top: 15px;
+      text-decoration: none;
+    }
+    
+    .btn-apply:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      color: white;
+    }
+    
+    .badge-category {
+      background-color: rgba(255, 102, 0, 0.1);
+      color: var(--secondary);
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      display: inline-block;
+    }
+    
+    .floating-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: var(--secondary);
+      color: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 20px rgba(255, 102, 0, 0.3);
+      z-index: 100;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+    
+    .floating-btn:hover {
+      transform: scale(1.1) translateY(-5px);
+      color: white;
+    }
+    
+    .filter-container {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
+    
+    .filter-title {
+      color: var(--secondary);
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    
+    .scholarship-count {
+      background-color: var(--secondary);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+    
+    .scholarship-card {
+      display: block;
+    }
+    
+    .scholarship-card.hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="heading">Scholarship Portal for B.Tech Freshers (2025) <span class="scholarship-count" id="scholarshipCount">24 Scholarships</span></h1>
+    
+    <div class="filter-container">
+      <h5 class="filter-title"><i class="fas fa-filter me-2"></i>Filter Scholarships</h5>
+      <div class="row">
+        <div class="col-md-3 mb-3">
+          <select class="form-select" id="categoryFilter">
+            <option value="All Categories">All Categories</option>
+            <option value="Merit-based">Merit-based</option>
+            <option value="Need-based">Need-based</option>
+            <option value="Girl Students">Girl Students</option>
+            <option value="SC/ST/OBC">SC/ST/OBC</option>
+            <option value="Differently Abled">Differently Abled</option>
+            <option value="State Specific">State Specific</option>
+            <option value="Corporate">Corporate</option>
+          </select>
+        </div>
+        <div class="col-md-3 mb-3">
+          <select class="form-select" id="stateFilter">
+            <option value="All States">All States</option>
+            <option value="Central Government">Central Government</option>
+            <option value="Andhra Pradesh">Andhra Pradesh</option>
+            <option value="Telangana">Telangana</option>
+            <option value="Karnataka">Karnataka</option>
+            <option value="Tamil Nadu">Tamil Nadu</option>
+            <option value="Maharashtra">Maharashtra</option>
+            <option value="Kerala">Kerala</option>
+          </select>
+        </div>
+        <div class="col-md-3 mb-3">
+          <select class="form-select" id="deadlineFilter">
+            <option value="All Deadlines">All Deadlines</option>
+            <option value="Closing Soon">Closing Soon</option>
+            <option value="Newly Added">Newly Added</option>
+          </select>
+        </div>
+        <div class="col-md-3 mb-3">
+          <button class="btn btn-success w-100" id="applyFiltersBtn">Apply Filters</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row" id="scholarshipContainer">
+      <!-- Scholarship 1 -->
+      <div class="col-lg-4 col-md-6 scholarship-card">
+        <div class="card">
+          <div class="card-header">
+            Central Sector Scheme
+          </div>
+          <div class="card-body">
+            <span class="badge-category">Merit-based | Need-based</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: ₹10,000 - ₹20,000 per year</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 31 October 2025</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>For meritorious students from families with income less than ₹8 lakh/year</div>
+              </div>
+            </div>
+            <a href="https://scholarships.gov.in/" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scholarship 2 -->
+      <div class="col-lg-4 col-md-6 scholarship-card">
+        <div class="card">
+          <div class="card-header">
+            AICTE Pragati Scholarship
+          </div>
+          <div class="card-body">
+            <span class="badge-category">Girl Students</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: ₹30,000 per year</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 30 November 2025</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>For girl students pursuing technical education (family income < ₹8 lakh/year)</div>
+              </div>
+            </div>
+            <a href="https://www.aicte-pragati-saksham-gov.in/" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scholarship 3 -->
+      <div class="col-lg-4 col-md-6 scholarship-card">
+        <div class="card">
+          <div class="card-header">
+            Epass Scholarship (Telangana)
+          </div>
+          <div class="card-body">
+            <span class="badge-category">Need-based | State</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: Full tuition fee reimbursement</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 15 December 2025</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>For Telangana residents with family income < ₹2 lakh/year</div>
+              </div>
+            </div>
+            <a href="https://telanganaepass.cgg.gov.in/" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scholarship 4 -->
+      <div class="col-lg-4 col-md-6 scholarship-card">
+        <div class="card">
+          <div class="card-header">
+            Vidyasaarathi Scholarship
+          </div>
+          <div class="card-body">
+            <span class="badge-category">Corporate | Need-based</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: Up to ₹50,000 per year</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: Varies by sponsor</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>Multiple scholarships funded by various corporate partners</div>
+              </div>
+            </div>
+            <a href="https://www.vidyasaarathi.co.in/" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scholarship 5 -->
+      <div class="col-lg-4 col-md-6 scholarship-card">
+        <div class="card">
+          <div class="card-header">
+            NSP Post-Matric Scholarship
+          </div>
+          <div class="card-body">
+            <span class="badge-category">SC/ST/OBC/Minorities</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: Full tuition + maintenance allowance</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 31 December 2025</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>For SC/ST/OBC/Minority students with family income < ₹2.5 lakh/year</div>
+              </div>
+            </div>
+            <a href="https://scholarships.gov.in/" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scholarship 6 -->
+      <div class="col-lg-4 col-md-6 scholarship-card">
+        <div class="card">
+          <div class="card-header">
+            Saksham Scholarship
+          </div>
+          <div class="card-body">
+            <span class="badge-category">Differently Abled</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: ₹50,000 per year</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 15 January 2026</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>For students with ≥40% disability pursuing technical education</div>
+              </div>
+            </div>
+            <a href="https://www.aicte-pragati-saksham-gov.in/" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scholarship 7 -->
+      <div class="col-lg-4 col-md-6 scholarship-card">
+        <div class="card">
+          <div class="card-header">
+            INSPIRE Scholarship
+          </div>
+          <div class="card-body">
+            <span class="badge-category">Merit-based | Research</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: ₹80,000 per year</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 30 September 2025</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>Top 1% students in 12th standard with interest in basic sciences</div>
+              </div>
+            </div>
+            <a href="https://online-inspire.gov.in/" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scholarship 8 -->
+      <div class="col-lg-4 col-md-6 scholarship-card">
+        <div class="card">
+          <div class="card-header">
+            ONGC Scholarship
+          </div>
+          <div class="card-body">
+            <span class="badge-category">SC/ST/OBC | Corporate</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: ₹48,000 per year</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 30 November 2025</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>For SC/ST/OBC students in 1st year engineering with >60% marks</div>
+              </div>
+            </div>
+            <a href="https://www.ongcindia.com/web/eng/scholarship" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scholarship 9 -->
+      <div class="col-lg-4 col-md-6 scholarship-card">
+        <div class="card">
+          <div class="card-header">
+            LIC Golden Jubilee Scholarship
+          </div>
+          <div class="card-body">
+            <span class="badge-category">Need-based</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: ₹20,000 per year</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 15 December 2025</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>For students from families with annual income < ₹2 lakh</div>
+              </div>
+            </div>
+            <a href="https://licindia.in/Bottom-Links/Golden-Jubilee-Foundation" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Continue with remaining scholarships (10-24) -->
+      <div class="col-lg-4 col-md-6 scholarship-card hidden">
+        <div class="card">
+          <div class="card-header">
+            Ishan Uday Scholarship
+          </div>
+          <div class="card-body">
+            <span class="badge-category">North East Region</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: ₹5,400 - ₹7,800 per month</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 31 October 2025</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>For students from North Eastern states pursuing higher education</div>
+              </div>
+            </div>
+            <a href="https://scholarships.gov.in/" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scholarship 11 -->
+      <div class="col-lg-4 col-md-6 scholarship-card hidden">
+        <div class="card">
+          <div class="card-header">
+            Foundation for Excellence
+          </div>
+          <div class="card-body">
+            <span class="badge-category">Merit-based | Need-based</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: Up to ₹60,000 per year</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 15 January 2026</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>For academically excellent students from low-income families</div>
+              </div>
+            </div>
+            <a href="https://ffe.org/" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scholarship 12 -->
+      <div class="col-lg-4 col-md-6 scholarship-card hidden">
+        <div class="card">
+          <div class="card-header">
+            Jindal Scholarship
+          </div>
+          <div class="card-body">
+            <span class="badge-category">Merit-cum-Means</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: ₹25,000 - ₹50,000 per year</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 30 November 2025</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>For students with >75% marks and family income < ₹6 lakh/year</div>
+              </div>
+            </div>
+            <a href="https://www.sitaramjindalfoundation.org/scholarships/" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Add remaining scholarship cards with hidden class for load more functionality -->
+      <div class="col-lg-4 col-md-6 scholarship-card hidden">
+        <div class="card">
+          <div class="card-header">
+            Reliance Foundation Scholarship
+          </div>
+          <div class="card-body">
+            <span class="badge-category">Merit-based | Need-based</span>
+            <div class="scholarship-details">
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-rupee-sign"></i></div>
+                <div>Amount: ₹2,00,000 - ₹6,00,000</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div>Deadline: 15 October 2025</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-icon"><i class="fas fa-info-circle"></i></div>
+                <div>For students with >85% marks and family income < ₹15 lakh/year</div>
+              </div>
+            </div>
+            <a href="https://www.reliancefoundation.org/scholarships" target="_blank" class="btn btn-apply">Apply Now <i class="fas fa-external-link-alt ms-2"></i></a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Continue adding more cards with similar structure... -->
+    </div>
+    
+    <div class="text-center my-5">
+      <button class="btn btn-outline-primary" id="loadMoreBtn">Load More Scholarships</button>
+    </div>
+  </div>
+  
+  <a href="#" class="floating-btn">
+    <i class="fas fa-question-circle fa-lg"></i>
+  </a>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get all elements
+      const cards = document.querySelectorAll('.scholarship-card');
+      const categorySelect = document.getElementById('categoryFilter');
+      const stateSelect = document.getElementById('stateFilter');
+      const deadlineSelect = document.getElementById('deadlineFilter');
+      const applyBtn = document.getElementById('applyFiltersBtn');
+      const loadMoreBtn = document.getElementById('loadMoreBtn');
+      const scholarshipCount = document.getElementById('scholarshipCount');
+      
+      // Track visible cards
+      let visibleCount = 9;
+      let filteredCards = [];
+      
+      // Initialize
+      applyFilters();
+      
+      // Event listeners
+      applyBtn.addEventListener('click', function() {
+        visibleCount = 9;
+        applyFilters();
+      });
+
+      loadMoreBtn.addEventListener('click', function() {
+        visibleCount += 6;
+        showCards();
+      });
+
+      // Main filtering function
+      function applyFilters() {
+        const category = categorySelect.value;
+        const state = stateSelect.value;
+        const deadline = deadlineSelect.value;
+        
+        filteredCards = Array.from(cards).filter(card => {
+          const cardText = card.textContent.toLowerCase();
+          const badgeText = card.querySelector('.badge-category').textContent.toLowerCase();
+          const headerText = card.querySelector('.card-header').textContent.toLowerCase();
+          
+          // Category filter
+          let categoryMatch = category === 'All Categories';
+          if (!categoryMatch) {
+            switch(category) {
+              case 'Merit-based':
+                categoryMatch = badgeText.includes('merit');
+                break;
+              case 'Need-based':
+                categoryMatch = badgeText.includes('need');
+                break;
+              case 'Girl Students':
+                categoryMatch = badgeText.includes('girl') || headerText.includes('women');
+                break;
+              case 'SC/ST/OBC':
+                categoryMatch = badgeText.includes('sc/st') || badgeText.includes('minorities');
+                break;
+              case 'Differently Abled':
+                categoryMatch = badgeText.includes('differently abled') || headerText.includes('saksham');
+                break;
+              case 'State Specific':
+                categoryMatch = badgeText.includes('state') || headerText.includes('telangana') || headerText.includes('kerala') || headerText.includes('karnataka');
+                break;
+              case 'Corporate':
+                categoryMatch = badgeText.includes('corporate');
+                break;
+            }
+          }
+          
+          // State filter
+          let stateMatch = state === 'All States';
+          if (!stateMatch) {
+            if (state === 'Central Government') {
+              stateMatch = !headerText.includes('telangana') && 
+                           !headerText.includes('karnataka') &&
+                           !headerText.includes('kerala') &&
+                           (headerText.includes('central') || headerText.includes('aicte') || headerText.includes('inspire'));
+            } else {
+              stateMatch = headerText.includes(state.toLowerCase()) || cardText.includes(state.toLowerCase());
+            }
+          }
+          
+          return categoryMatch && stateMatch;
+        });
+        
+        showCards();
+        updateCount();
+      }
+
+      // Display filtered cards
+      function showCards() {
+        // Hide all first
+        cards.forEach(card => {
+          card.classList.add('hidden');
+          card.style.display = 'none';
+        });
+        
+        // Show filtered cards up to visibleCount
+        filteredCards.slice(0, visibleCount).forEach(card => {
+          card.classList.remove('hidden');
+          card.style.display = 'block';
+        });
+        
+        // Toggle load more button
+        if (visibleCount >= filteredCards.length) {
+          loadMoreBtn.style.display = 'none';
+        } else {
+          loadMoreBtn.style.display = 'block';
+        }
+      }
+      
+      // Update scholarship count
+      function updateCount() {
+        scholarshipCount.textContent = `${filteredCards.length} Scholarships`;
+      }
+      
+      // Smooth scroll for floating button
+      document.querySelector('.floating-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+    });
+  </script>
+  <script src="js/logout.js"></script>
+  <script>
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const response = await fetch('/api/scholarships/active');
+    const { scholarships } = await response.json();
+    
+    const container = document.getElementById('scholarships-container');
+    
+    scholarships.forEach(scholarship => {
+      const card = document.createElement('div');
+      card.className = 'scholarship-card';
+      card.innerHTML = `
+        <h3>${scholarship.title}</h3>
+        <p><strong>Amount:</strong> ₹${scholarship.amount}</p>
+        <p><strong>Deadline:</strong> ${new Date(scholarship.deadline).toLocaleDateString()}</p>
+        <p>${scholarship.description}</p>
+        <button class="apply-btn">Apply Now</button>
+      `;
+      container.appendChild(card);
+    });
+  } catch (error) {
+    console.error('Error loading scholarships:', error);
+  }
+});
+</script>
+
+
+</body>
+</html>
