@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Notifications - Scholarship Finder</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background: #ffffff;
+    }
+    .navbar {
+      background: linear-gradient(to right, #ff6600, #28a745);
+    }
+    .navbar-brand, .nav-link {
+      color: white !important;
+      font-weight: 600;
+    }
+    .navbar .nav-link:hover {
+      color: #fffacd !important;
+    }
+    .container {
+      margin-top: 60px;
+    }
+    h3 {
+      color: #ff6600;
+      font-weight: bold;
+    }
+    .notification-card {
+      border-left: 6px solid #28a745;
+      background-color: #f9f9f9;
+      margin-bottom: 15px;
+      padding: 15px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="#">🎓 Scholarship Finder</a>
+    <div class="collapse navbar-collapse justify-content-end">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" href="userdashboard.html">🏠 Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="real-scholarships.html">🏆 Browse</a></li>
+        <li class="nav-item"><a class="nav-link" href="logout.php">🚪 Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <h3 class="text-center">📬 Welcome back, <span id="welcome-username"></span>!</h3>
+  <p class="text-center text-muted">Here are your latest scholarship notifications and alerts.</p>
+
+  <div id="notifications-list" class="mt-4">
+
+    <!-- Example Notification -->
+    <div class="notification-card">
+      <strong>🎉 New Scholarship Open:</strong> AP EAMCET Merit Scholarship applications are now open. Deadline: <strong>Aug 15</strong>.
+    </div>
+
+    <div class="notification-card">
+      <strong>📌 Reminder:</strong> Upload your income certificate before <strong>July 30</strong> to remain eligible.
+    </div>
+
+    <div class="notification-card">
+      <strong>⚠️ Action Required:</strong> Update your academic profile to apply for Tech India Foundation Scholarship.
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Fetch and display user's name from localStorage
+  window.addEventListener('DOMContentLoaded', async () => {
+    const email = localStorage.getItem('userEmail');
+    if (email) {
+      try {
+        const res = await fetch(`/api/user?email=${encodeURIComponent(email)}`);
+        const user = await res.json();
+        if (user && user.name) {
+          document.getElementById('welcome-username').textContent = user.name;
+        }
+      } catch (err) {
+        console.error('Error fetching user:', err);
+      }
+    }
+  });
+
+  // Logout logic
+  document.querySelectorAll('a[href="logout.php"]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('userEmail');
+      window.location.href = '/loginchoice.html';
+    });
+  });
+</script>
+<script src="js/logout.js"></script>
+
+</body>
+</html>
