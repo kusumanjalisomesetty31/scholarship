@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send Notifications | Scholarship Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .notification-card {
+      border-left: 4px solid #0d6efd;
+      transition: all 0.3s;
+    }
+    .notification-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    #message {
+      min-height: 150px;
+    }
+    .form-check-label {
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2><i class="fas fa-bell me-2"></i> Send Notifications</h2>
+      <a href="admin-dashboard.html" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </a>
+    </div>
+
+    <!-- Notification Form -->
+    <div class="card notification-card mb-4">
+      <div class="card-body">
+        <form id="notificationForm">
+          <div class="mb-3">
+            <label for="title" class="form-label">Notification Title*</label>
+            <input type="text" class="form-control" id="title" required>
+          </div>
+          
+          <div class="mb-3">
+            <label for="message" class="form-label">Message*</label>
+            <textarea class="form-control" id="message" required></textarea>
+          </div>
+          
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="sendEmail">
+            <label class="form-check-label" for="sendEmail">
+              Also send as email to all users
+            </label>
+          </div>
+          
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-paper-plane me-2"></i> Send Notification
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Recent Notifications -->
+    <div class="card">
+      <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="fas fa-history me-2"></i> Recent Notifications</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Title</th>
+                <th>Recipients</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="notificationsTable">
+              <!-- Will be populated via JavaScript -->
+              <tr>
+                <td colspan="4" class="text-center py-4">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title">Success!</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p id="successMessage">Notification sent successfully!</p>
+          <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle me-2"></i>
+            <span id="deliveryStats"></span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // DOM Elements
+    const form = document.getElementById('notificationForm');
+    const successModal = new bootstrap.Modal('#successModal');
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const notification = {
+        title: document.getElementById('title').value,
+        message: document.getElementById('message').value,
+        sendEmail: document.getElementById('sendEmail').checked
+      };
+
+      try {
+        const response = await fetch('/api/notifications/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(notification)
+        });
+
+        if (!response.ok) throw new Error('Failed to send notification');
+
+        const result = await response.json();
+        
+        // Show success modal
+        document.getElementById('successMessage').textContent = result.message;
+        document.getElementById('deliveryStats').innerHTML = `
+          Delivered to <strong>${result.stats.totalUsers}</strong> users | 
+          ${result.stats.emailSent ? 'Email sent' : 'No email'}
+        `;
+        successModal.show();
+        
+        // Refresh notifications list
+        loadRecentNotifications();
+        form.reset();
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+      }
+    });
+
+    // Load recent notifications
+    async function loadRecentNotifications() {
+      try {
+        // In a real app, you would fetch from your API
+        const mockData = [
+          {
+            date: new Date(),
+            title: "New Scholarship Added",
+            recipients: "All Users (1,243)",
+            status: "Delivered"
+          },
+          {
+            date: new Date(Date.now() - 86400000),
+            title: "System Maintenance",
+            recipients: "All Users (1,243)",
+            status: "Delivered"
+          }
+        ];
+
+        const tableBody = document.getElementById('notificationsTable');
+        tableBody.innerHTML = mockData.map(notif => `
+          <tr>
+            <td>${notif.date.toLocaleString()}</td>
+            <td><strong>${notif.title}</strong></td>
+            <td>${notif.recipients}</td>
+            <td><span class="badge bg-success">${notif.status}</span></td>
+          </tr>
+        `).join('');
+
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+        document.getElementById('notificationsTable').innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center text-danger py-4">
+              <i class="fas fa-exclamation-circle me-2"></i>
+              Failed to load notifications
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', loadRecentNotifications);
+  </script>
+</body>
+</html>
