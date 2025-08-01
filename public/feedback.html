@@ -107,6 +107,14 @@
       justify-content: center;
       margin-top: 20px;
     }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      min-height: 80px;
+      font-family: inherit;
+    }
   </style>
 </head>
 <body>
@@ -122,7 +130,7 @@
         <div class="question-text">1. How would you rate your overall experience with our scholarship portal?</div>
         <div class="options">
           <label class="option">
-            <input type="radio" name="q1" value="Excellent"> Excellent
+            <input type="radio" name="q1" value="Excellent" required> Excellent
           </label>
           <label class="option">
             <input type="radio" name="q1" value="Good"> Good
@@ -140,7 +148,7 @@
         <div class="question-text">2. How easy was it to find relevant scholarships?</div>
         <div class="options">
           <label class="option">
-            <input type="radio" name="q2" value="Very Easy"> Very Easy
+            <input type="radio" name="q2" value="Very Easy" required> Very Easy
           </label>
           <label class="option">
             <input type="radio" name="q2" value="Somewhat Easy"> Somewhat Easy
@@ -158,7 +166,7 @@
         <div class="question-text">3. How satisfied are you with the scholarship matching results?</div>
         <div class="options">
           <label class="option">
-            <input type="radio" name="q3" value="Very Satisfied"> Very Satisfied
+            <input type="radio" name="q3" value="Very Satisfied" required> Very Satisfied
           </label>
           <label class="option">
             <input type="radio" name="q3" value="Satisfied"> Satisfied
@@ -176,7 +184,7 @@
         <div class="question-text">4. Would you recommend our portal to other students?</div>
         <div class="options">
           <label class="option">
-            <input type="radio" name="q4" value="Definitely"> Definitely
+            <input type="radio" name="q4" value="Definitely" required> Definitely
           </label>
           <label class="option">
             <input type="radio" name="q4" value="Probably"> Probably
@@ -192,7 +200,7 @@
 
       <div class="question">
         <div class="question-text">5. What additional features would you like to see? (Optional)</div>
-        <textarea name="suggestions" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ddd;" placeholder="Your suggestions..."></textarea>
+        <textarea name="suggestions" placeholder="Your suggestions..."></textarea>
       </div>
 
       <div class="button-container">
@@ -219,70 +227,73 @@
         });
       });
 
-      // Update progress bar
+      // Update progress bar as user answers questions
       function updateProgress() {
-        const totalQuestions = document.querySelectorAll('.question').length - 1; // exclude textarea question
+        const totalQuestions = 4; // Only count required questions
         const answered = document.querySelectorAll('input[type="radio"]:checked').length;
-        const progress = (answered / totalQuestions) * 100;
+        const progress = Math.min((answered / totalQuestions) * 100, 100);
         document.getElementById('progressBar').style.width = `${progress}%`;
       }
 
-      // Form submission
-      document.getElementById('surveyForm').addEventListener('submit', function(e) {
+      // Initialize progress bar
+      updateProgress();
+
+      // Form submission handler
+      document.getElementById('surveyForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const formData = new FormData(this);
+        // Get user email from localStorage or use anonymous
+        const userEmail = localStorage.getItem('userEmail') || 'anonymous@example.com';
+        
+        // Prepare feedback data
         const feedbackData = {
-          email: localStorage.getItem('userEmail') || 'anonymous',
-          responses: {}
+          email: userEmail,
+          responses: {
+            q1: document.querySelector('input[name="q1"]:checked')?.value,
+            q2: document.querySelector('input[name="q2"]:checked')?.value,
+            q3: document.querySelector('input[name="q3"]:checked')?.value,
+            q4: document.querySelector('input[name="q4"]:checked')?.value,
+            suggestions: document.querySelector('textarea[name="suggestions"]').value
+          }
         };
 
-        // Collect all responses
-        formData.forEach((value, key) => {
-          if (key !== 'suggestions') {
-            feedbackData.responses[key] = value;
-          } else if (value) {
-            feedbackData.suggestions = value;
-          }
-        });
-
-        // Simple client-side validation
-        const answeredQuestions = Object.keys(feedbackData.responses).length;
-        if (answeredQuestions < 4) {
-          alert('Please answer at least the first 4 questions');
+        // Validate required questions
+        if (!feedbackData.responses.q1 || !feedbackData.responses.q2 || 
+            !feedbackData.responses.q3 || !feedbackData.responses.q4) {
+          alert('Please answer all required questions');
           return;
         }
 
-        // Submit to server (replace with your actual endpoint)
-        console.log('Submitting feedback:', feedbackData);
-        
-        // Simulate submission (replace with actual fetch)
-        setTimeout(() => {
-          alert('Thank you for your feedback!');
-          this.reset();
-          document.getElementById('progressBar').style.width = '0%';
-          document.querySelectorAll('.option').forEach(opt => {
-            opt.classList.remove('selected');
+        try {
+          // Submit to backend
+          const response = await fetch('/api/feedback', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+            },
+            body: JSON.stringify(feedbackData)
           });
-        }, 500);
-        
-        // Actual submission would look like:
-        /*
-        fetch('/api/feedback', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(feedbackData)
-        })
-        .then(response => response.json())
-        .then(data => {
-          alert(data.message || 'Thank you for your feedback!');
-          this.reset();
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Failed to submit feedback');
-        });
-        */
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.message || 'Failed to submit feedback');
+          }
+
+          // Success - show confirmation and redirect
+          alert('Thank you for your feedback!');
+          window.location.href = 'userhome.html';
+          
+        } catch (error) {
+          console.error('Feedback submission error:', error);
+          alert(error.message || 'Error submitting feedback. Please try again.');
+        }
+      });
+
+      // Highlight selected options when page loads (if going back)
+      document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+        radio.closest('.option').classList.add('selected');
       });
     });
   </script>
