@@ -1,301 +1,225 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Feedback Survey | Scholarship Finder</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f5f7fa;
-      margin: 0;
-      padding: 20px;
-      color: #333;
-    }
-    .survey-container {
-      max-width: 800px;
-      margin: 30px auto;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-    }
-    h2 {
-      color: #2c3e50;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .question {
-      margin-bottom: 25px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #eee;
-    }
-    .question-text {
-      font-weight: 600;
-      margin-bottom: 15px;
-      font-size: 1.1em;
-    }
-    .options {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-    }
-    .option {
-      background: #f8f9fa;
-      padding: 12px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s;
-      border: 2px solid transparent;
-    }
-    .option:hover {
-      background: #e9ecef;
-    }
-    .option.selected {
-      background: #e3f2fd;
-      border-color: #fa9049;
-    }
-    .option input {
-      margin-right: 10px;
-    }
-    .submit-btn {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 12px 25px;
-      font-size: 1em;
-      border-radius: 8px;
-      cursor: pointer;
-      display: block;
-      margin: 30px auto 0;
-      transition: background 0.3s;
-    }
-    .submit-btn:hover {
-      background: #3e8e41;
-    }
-    .progress-bar {
-      height: 6px;
-      background: #e0e0e0;
-      margin-bottom: 30px;
-      border-radius: 3px;
-    }
-    .progress {
-      height: 100%;
-      background: #4CAF50;
-      border-radius: 3px;
-      width: 0%;
-      transition: width 0.5s;
-    }
-    .back-btn {
-      background: #f5f7fa;
-      color: #2c3e50;
-      border: 1px solid #ddd;
-      padding: 10px 20px;
-      font-size: 1em;
-      border-radius: 8px;
-      cursor: pointer;
-      display: inline-block;
-      margin-right: 15px;
-      transition: all 0.3s;
-      text-decoration: none;
-    }
-    .back-btn:hover {
-      background: #e9ecef;
-    }
-    .button-container {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-    textarea {
-      width: 100%;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-      min-height: 80px;
-      font-family: inherit;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Survey</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .question {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .option {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .option:hover {
+            background: #e9ecef;
+        }
+        .option.selected {
+            background: #e3f2fd;
+            border-color: #fa9049;
+        }
+        .option input {
+            margin-right: 10px;
+        }
+        .submit-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto 0;
+            transition: background 0.3s;
+        }
+        .submit-btn:hover {
+            background: #3e8e41;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            min-height: 80px;
+            font-family: inherit;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
 </head>
 <body>
-  <div class="survey-container">
-    <h2>📝 Scholarship Experience Survey</h2>
-    
-    <div class="progress-bar">
-      <div class="progress" id="progressBar"></div>
+    <div class="container">
+        <h2>📝 Scholarship Experience Survey</h2>
+        
+        <form id="feedbackForm">
+            <div class="question">
+                <div class="question-text">1. How would you rate your overall experience?</div>
+                <div class="options">
+                    <label class="option"><input type="radio" name="q1" value="Excellent" required> Excellent</label>
+                    <label class="option"><input type="radio" name="q1" value="Good"> Good</label>
+                    <label class="option"><input type="radio" name="q1" value="Average"> Average</label>
+                    <label class="option"><input type="radio" name="q1" value="Poor"> Poor</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">2. How easy was it to find scholarships?</div>
+                <div class="options">
+                    <label class="option"><input type="radio" name="q2" value="Very Easy" required> Very Easy</label>
+                    <label class="option"><input type="radio" name="q2" value="Somewhat Easy"> Somewhat Easy</label>
+                    <label class="option"><input type="radio" name="q2" value="Neutral"> Neutral</label>
+                    <label class="option"><input type="radio" name="q2" value="Difficult"> Difficult</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">3. How satisfied are you with the results?</div>
+                <div class="options">
+                    <label class="option"><input type="radio" name="q3" value="Very Satisfied" required> Very Satisfied</label>
+                    <label class="option"><input type="radio" name="q3" value="Satisfied"> Satisfied</label>
+                    <label class="option"><input type="radio" name="q3" value="Neutral"> Neutral</label>
+                    <label class="option"><input type="radio" name="q3" value="Dissatisfied"> Dissatisfied</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">4. Would you recommend our portal?</div>
+                <div class="options">
+                    <label class="option"><input type="radio" name="q4" value="Definitely" required> Definitely</label>
+                    <label class="option"><input type="radio" name="q4" value="Probably"> Probably</label>
+                    <label class="option"><input type="radio" name="q4" value="Not Sure"> Not Sure</label>
+                    <label class="option"><input type="radio" name="q4" value="No"> No</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">5. Suggestions for improvement (Optional)</div>
+                <textarea name="suggestions" placeholder="Your suggestions..."></textarea>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+            
+            <button type="submit" class="submit-btn">Submit Feedback</button>
+        </form>
     </div>
 
-    <form id="surveyForm">
-      <div class="question">
-        <div class="question-text">1. How would you rate your overall experience with our scholarship portal?</div>
-        <div class="options">
-          <label class="option">
-            <input type="radio" name="q1" value="Excellent" required> Excellent
-          </label>
-          <label class="option">
-            <input type="radio" name="q1" value="Good"> Good
-          </label>
-          <label class="option">
-            <input type="radio" name="q1" value="Average"> Average
-          </label>
-          <label class="option">
-            <input type="radio" name="q1" value="Poor"> Poor
-          </label>
-        </div>
-      </div>
-
-      <div class="question">
-        <div class="question-text">2. How easy was it to find relevant scholarships?</div>
-        <div class="options">
-          <label class="option">
-            <input type="radio" name="q2" value="Very Easy" required> Very Easy
-          </label>
-          <label class="option">
-            <input type="radio" name="q2" value="Somewhat Easy"> Somewhat Easy
-          </label>
-          <label class="option">
-            <input type="radio" name="q2" value="Neutral"> Neutral
-          </label>
-          <label class="option">
-            <input type="radio" name="q2" value="Difficult"> Difficult
-          </label>
-        </div>
-      </div>
-
-      <div class="question">
-        <div class="question-text">3. How satisfied are you with the scholarship matching results?</div>
-        <div class="options">
-          <label class="option">
-            <input type="radio" name="q3" value="Very Satisfied" required> Very Satisfied
-          </label>
-          <label class="option">
-            <input type="radio" name="q3" value="Satisfied"> Satisfied
-          </label>
-          <label class="option">
-            <input type="radio" name="q3" value="Neutral"> Neutral
-          </label>
-          <label class="option">
-            <input type="radio" name="q3" value="Dissatisfied"> Dissatisfied
-          </label>
-        </div>
-      </div>
-
-      <div class="question">
-        <div class="question-text">4. Would you recommend our portal to other students?</div>
-        <div class="options">
-          <label class="option">
-            <input type="radio" name="q4" value="Definitely" required> Definitely
-          </label>
-          <label class="option">
-            <input type="radio" name="q4" value="Probably"> Probably
-          </label>
-          <label class="option">
-            <input type="radio" name="q4" value="Not Sure"> Not Sure
-          </label>
-          <label class="option">
-            <input type="radio" name="q4" value="No"> No
-          </label>
-        </div>
-      </div>
-
-      <div class="question">
-        <div class="question-text">5. What additional features would you like to see? (Optional)</div>
-        <textarea name="suggestions" placeholder="Your suggestions..."></textarea>
-      </div>
-
-      <div class="button-container">
-        <a href="userhome.html" class="back-btn">← Back to Home</a>
-        <button type="submit" class="submit-btn">Submit Feedback</button>
-      </div>
-    </form>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Make options clickable
-      document.querySelectorAll('.option').forEach(option => {
-        option.addEventListener('click', function() {
-          const radio = this.querySelector('input[type="radio"]');
-          if (radio) {
-            radio.checked = true;
-            document.querySelectorAll(`input[name="${radio.name}"]`).forEach(r => {
-              r.closest('.option').classList.remove('selected');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Highlight selected options
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                        document.querySelectorAll(`input[name="${radio.name}"]`).forEach(r => {
+                            r.closest('.option').classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                    }
+                });
             });
-            this.classList.add('selected');
-            updateProgress();
-          }
+
+            // Form submission
+            document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Hide previous error
+                document.getElementById('errorMessage').style.display = 'none';
+                
+                // Get form data
+                const formData = new FormData(this);
+                const feedbackData = {
+                    email: localStorage.getItem('userEmail') || 'anonymous@example.com',
+                    responses: {
+                        q1: formData.get('q1'),
+                        q2: formData.get('q2'),
+                        q3: formData.get('q3'),
+                        q4: formData.get('q4'),
+                        suggestions: formData.get('suggestions') || ''
+                    }
+                };
+
+                // Validate required fields
+                if (!feedbackData.responses.q1 || !feedbackData.responses.q2 || 
+                    !feedbackData.responses.q3 || !feedbackData.responses.q4) {
+                    showError('Please answer all required questions');
+                    return;
+                }
+
+                try {
+                    // Submit to backend
+                    const response = await fetch('/api/feedback', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                        },
+                        body: JSON.stringify(feedbackData)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Submission failed');
+                    }
+
+                    // Success - redirect to home
+                    alert('Thank you for your feedback!');
+                    window.location.href = 'userhome.html';
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    showError(error.message || 'Failed to submit feedback. Please try again.');
+                }
+            });
+
+            function showError(message) {
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
         });
-      });
-
-      // Update progress bar as user answers questions
-      function updateProgress() {
-        const totalQuestions = 4; // Only count required questions
-        const answered = document.querySelectorAll('input[type="radio"]:checked').length;
-        const progress = Math.min((answered / totalQuestions) * 100, 100);
-        document.getElementById('progressBar').style.width = `${progress}%`;
-      }
-
-      // Initialize progress bar
-      updateProgress();
-
-      // Form submission handler
-      document.getElementById('surveyForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        // Get user email from localStorage or use anonymous
-        const userEmail = localStorage.getItem('userEmail') || 'anonymous@example.com';
-        
-        // Prepare feedback data
-        const feedbackData = {
-          email: userEmail,
-          responses: {
-            q1: document.querySelector('input[name="q1"]:checked')?.value,
-            q2: document.querySelector('input[name="q2"]:checked')?.value,
-            q3: document.querySelector('input[name="q3"]:checked')?.value,
-            q4: document.querySelector('input[name="q4"]:checked')?.value,
-            suggestions: document.querySelector('textarea[name="suggestions"]').value
-          }
-        };
-
-        // Validate required questions
-        if (!feedbackData.responses.q1 || !feedbackData.responses.q2 || 
-            !feedbackData.responses.q3 || !feedbackData.responses.q4) {
-          alert('Please answer all required questions');
-          return;
-        }
-
-        try {
-          // Submit to backend
-          const response = await fetch('/api/feedback', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-            },
-            body: JSON.stringify(feedbackData)
-          });
-
-          const result = await response.json();
-
-          if (!response.ok) {
-            throw new Error(result.message || 'Failed to submit feedback');
-          }
-
-          // Success - show confirmation and redirect
-          alert('Thank you for your feedback!');
-          window.location.href = 'userhome.html';
-          
-        } catch (error) {
-          console.error('Feedback submission error:', error);
-          alert(error.message || 'Error submitting feedback. Please try again.');
-        }
-      });
-
-      // Highlight selected options when page loads (if going back)
-      document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
-        radio.closest('.option').classList.add('selected');
-      });
-    });
-  </script>
+    </script>
 </body>
 </html>
