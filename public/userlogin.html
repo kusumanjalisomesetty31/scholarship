@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Login</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to bottom right, #e6ffe6, #ffffff);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      background: linear-gradient(to right, #ff6600, #28a745);
+    }
+
+    .navbar-brand {
+      color: white;
+      font-weight: 600;
+    }
+
+    .navbar-brand:hover {
+      color: #fefefe;
+    }
+
+    .login-box {
+      max-width: 420px;
+      margin: 80px auto;
+      padding: 35px;
+      background: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      0% {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    h2 {
+      color: #28a745;
+      font-weight: 600;
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+    }
+
+    a {
+      text-decoration: none;
+      color: #007bff;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar p-3">
+  <div class="container">
+    <a class="navbar-brand" href="#">🎓 Scholarship Finder</a>
+  </div>
+</nav>
+
+<div class="login-box">
+  <h2 class="text-center mb-4">👤 User Login</h2>
+
+  <form method="post" action="/login">
+    <div class="mb-3">
+      <label>Email:</label>
+      <input type="email" name="email" class="form-control" required placeholder="Enter your email" />
+    </div>
+    <div class="mb-3">
+      <label>Password:</label>
+      <input type="password" name="password" class="form-control" required placeholder="Enter your password" />
+    </div>
+    <button type="submit" class="btn btn-success w-100">🔓 Login</button>
+  </form>
+
+  <p class="mt-4 text-center">
+    Don't have an account? <a href="userregister.html">Register</a><br>
+    <a href="forgotpassword.html">Forgot Password?</a>
+  </p>
+</div>
+<script>
+document.querySelector('form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const data = {
+    email: form.email.value,
+    password: form.password.value
+  };
+  const res = await fetch('/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(data)
+  });
+  const text = await res.text();
+  if (text.includes('Login successful')) {
+    // Save email to localStorage
+    localStorage.setItem('userEmail', form.email.value);
+    window.location.href = '/userhome.html';
+  } else {
+    alert('Invalid email or password.');
+  }
+});
+</script>
+<script src="js/logout.js"></script>
+
+</body>
+</html>
